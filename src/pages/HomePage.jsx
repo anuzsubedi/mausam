@@ -33,17 +33,18 @@ const HomePage = () => {
   const [error, setError] = useState(null);
   const [unit, setUnit] = useState("C");
 
-  const getWeatherIcon = (condition) => {
-    // Map weather conditions to icons with colors
+  const getWeatherIcon = (condition, size) => {
+    // Map weather conditions to icons with customizable size
     if (condition.includes("Sunny"))
-      return <WiDaySunny size="128" color="yellow" />;
-    if (condition.includes("Cloud")) return <WiCloud size="48" color="gray" />;
-    if (condition.includes("Rain")) return <WiRain size="48" color="blue" />;
-    if (condition.includes("Snow")) return <WiSnow size="48" color="white" />;
+      return <WiDaySunny size={size} color="yellow" />;
+    if (condition.includes("Cloud"))
+      return <WiCloud size={size} color="gray" />;
+    if (condition.includes("Rain")) return <WiRain size={size} color="blue" />;
+    if (condition.includes("Snow")) return <WiSnow size={size} color="white" />;
     if (condition.includes("Thunder"))
-      return <WiThunderstorm size="128" color="purple" />;
-    if (condition.includes("Fog")) return <WiFog size="48" color="gray" />;
-    return <WiCloud size="48" color="gray" />; // Default icon
+      return <WiThunderstorm size={size} color="purple" />;
+    if (condition.includes("Fog")) return <WiFog size={size} color="gray" />;
+    return <WiCloud size={size} color="gray" />;
   };
 
   const getWeather = async (latitude, longitude) => {
@@ -120,7 +121,7 @@ const HomePage = () => {
 
               {/* Column 2: Weather Icon */}
               <Box display="flex" justifyContent="center" alignItems="center">
-                {getWeatherIcon(weatherData.current.condition.text)}
+                {getWeatherIcon(weatherData.current.condition.text, 128)}
               </Box>
             </Flex>
           </Box>
@@ -176,7 +177,7 @@ const HomePage = () => {
                   textAlign="center"
                 >
                   <Text fontSize="sm">{hour.time.split(" ")[1]}</Text>
-                  {getWeatherIcon(hour.condition.text)}
+                  {getWeatherIcon(hour.condition.text, 48)}
                   <Text fontSize="md" fontWeight="bold">
                     {unit === "C" ? `${hour.temp_c}°C` : `${hour.temp_f}°F`}
                   </Text>
