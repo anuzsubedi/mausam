@@ -9,8 +9,20 @@ import {
   HStack,
   useColorMode,
   useColorModeValue,
+  Input,
+  InputGroup,
+  InputRightElement,
+  Alert,
+  AlertIcon,
+  AlertDescription,
 } from "@chakra-ui/react";
-import { FaMoon, FaSun, FaCogs } from "react-icons/fa";
+import {
+  FaMoon,
+  FaSun,
+  FaSearchLocation,
+  FaSearch,
+  FaMapPin,
+} from "react-icons/fa";
 import {
   WiDaySunny,
   WiCloud,
@@ -20,6 +32,7 @@ import {
   WiFog,
 } from "react-icons/wi"; // Import weather icons
 import { fetchHourlyForecast } from "../services/weatherService";
+import { FaLocationCrosshairs, FaLocationPin } from "react-icons/fa6";
 
 const HomePage = () => {
   const { colorMode, toggleColorMode } = useColorMode();
@@ -29,33 +42,41 @@ const HomePage = () => {
 
   const [weatherData, setWeatherData] = useState(null);
   const [hourlyData, setHourlyData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [unit, setUnit] = useState("C");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const getWeatherIcon = (condition, size) => {
     // Map weather conditions to icons with customizable size
-    if (condition.includes("Sunny"))
-      return <WiDaySunny size={size} color="yellow" />;
-    if (condition.includes("Cloud"))
-      return <WiCloud size={size} color="gray" />;
-    if (condition.includes("Rain")) return <WiRain size={size} color="blue" />;
-    if (condition.includes("Snow")) return <WiSnow size={size} color="white" />;
-    if (condition.includes("Thunder"))
-      return <WiThunderstorm size={size} color="purple" />;
-    if (condition.includes("Fog")) return <WiFog size={size} color="gray" />;
-    return <WiCloud size={size} color="gray" />;
+    if (condition.includes("Sunny")) return <WiDaySunny size={size} />;
+    if (condition.includes("Cloud")) return <WiCloud size={size} />;
+    if (condition.includes("Rain")) return <WiRain size={size} />;
+    if (condition.includes("Snow")) return <WiSnow size={size} />;
+    if (condition.includes("Thunder")) return <WiThunderstorm size={size} />;
+    if (condition.includes("Fog")) return <WiFog size={size} />;
+    return <WiCloud size={size} />;
   };
 
-  const getWeather = async (latitude, longitude) => {
+  const getWeather = async (query) => {
     try {
-      const data = await fetchHourlyForecast(latitude, longitude);
+      setLoading(true);
+      setError(null);
+      const data = await fetchHourlyForecast(query);
       setWeatherData(data);
       setHourlyData(data.forecast.forecastday[0].hour); // Set hourly forecast
       setLoading(false);
     } catch (err) {
-      setError("Failed to fetch weather data.");
+      setError(err.message || "Failed to fetch weather data.");
       setLoading(false);
+    }
+  };
+
+  const handleSearch = () => {
+    if (searchQuery.trim() !== "") {
+      getWeather(searchQuery);
+    } else {
+      setError("Please enter a valid city name.");
     }
   };
 
@@ -64,47 +85,69 @@ const HomePage = () => {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-          getWeather(latitude, longitude);
+          getWeather(`${latitude},${longitude}`);
         },
         () => {
           setError("Failed to get location.");
-          setLoading(false);
         }
       );
     } else {
       setError("Geolocation is not supported by this browser.");
-      setLoading(false);
     }
   };
-
-  useEffect(() => {
-    getLocation();
-  }, []);
 
   const toggleUnit = () => {
     setUnit((prevUnit) => (prevUnit === "C" ? "F" : "C"));
   };
 
   return (
-    <Box
-      minH="100vh"
-      bg={bg}
-      color={textColor}
-      p={4}
-      fontFamily="monospace" // Apply monospace font globally
-    >
+    <Box minH="100vh" bg={bg} color={textColor} p={4} fontFamily="monospace">
+      <Flex justifyContent="center" alignItems="center" mb={4}>
+        <InputGroup width={["80%", "80%", "50%"]}>
+          <Input
+            placeholder="Search for a city..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            bg={cardBg}
+            borderRadius="lg"
+          />
+          <InputRightElement>
+            <IconButton
+              aria-label="Search"
+              icon={<FaSearch />}
+              onClick={handleSearch}
+              isRound
+              size="sm"
+              bg="transparent"
+            />
+          </InputRightElement>
+        </InputGroup>
+        <IconButton
+          ml={2}
+          aria-label="Use GPS"
+          icon={<FaLocationCrosshairs />}
+          onClick={getLocation}
+          isRound
+          size="sm"
+          bg="transparent"
+        />
+      </Flex>
+      {/* Error Notification */}
+      {error && (
+        <Flex justifyContent="center" mb={4}>
+          <Alert status="error" w={["80%", "80%", "50%"]} borderRadius="lg">
+            <AlertIcon />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        </Flex>
+      )}
       {/* Main Weather Section */}
       <Flex justifyContent="center" alignItems="center" mb={8}>
         {loading ? (
           <Spinner size="xl" />
-        ) : error ? (
-          <Text fontSize="xl" color="red.500">
-            {error}
-          </Text>
-        ) : (
+        ) : weatherData ? (
           <Box bg={bg} p={4} w={["80%", "80%", "50%"]}>
             <Flex alignItems="center" justifyContent="space-between">
-              {/* Column 1: City, Weather Info, Temperature */}
               <Box textAlign="left">
                 <Text fontSize="4xl" mb={2}>
                   {weatherData.location.name}
@@ -118,16 +161,13 @@ const HomePage = () => {
                     : `${weatherData.current.temp_f}°F`}
                 </Text>
               </Box>
-
-              {/* Column 2: Weather Icon */}
               <Box display="flex" justifyContent="center" alignItems="center">
                 {getWeatherIcon(weatherData.current.condition.text, 128)}
               </Box>
             </Flex>
           </Box>
-        )}
+        ) : null}
       </Flex>
-
       {/* Hourly Forecast Card */}
       {!loading && hourlyData.length > 0 && (
         <Flex justifyContent="center">
@@ -136,36 +176,12 @@ const HomePage = () => {
             p={4}
             borderRadius="lg"
             boxShadow="lg"
-            w={["80%", "80%", "50%"]} // Keep the forecast card size unchanged
+            w={["80%", "80%", "50%"]}
           >
             <Text fontSize="lg" fontWeight="bold" mb={4}>
               Hourly Forecast
             </Text>
-            <HStack
-              spacing={4}
-              overflowX="auto"
-              py={2}
-              scrollbarWidth="thin"
-              css={{
-                scrollbarColor: `${useColorModeValue(
-                  "#A0AEC0",
-                  "#4A5568"
-                )} ${useColorModeValue("#EDF2F7", "#2D3748")}`,
-                "::-webkit-scrollbar": {
-                  height: "6px",
-                },
-                "::-webkit-scrollbar-track": {
-                  backgroundColor: useColorModeValue("#EDF2F7", "#2D3748"),
-                },
-                "::-webkit-scrollbar-thumb": {
-                  backgroundColor: useColorModeValue("#A0AEC0", "#4A5568"),
-                  borderRadius: "8px",
-                },
-                "::-webkit-scrollbar-thumb:hover": {
-                  backgroundColor: useColorModeValue("#718096", "#2D3748"),
-                },
-              }}
-            >
+            <HStack spacing={4} overflowX="auto" py={2}>
               {hourlyData.map((hour, index) => (
                 <VStack
                   key={index}
@@ -187,36 +203,31 @@ const HomePage = () => {
           </Box>
         </Flex>
       )}
-
       {/* Floating Sidebar */}
       <Box
         position="fixed"
         top="50%"
         left="5"
         transform="translateY(-50%)"
-        bg={useColorModeValue("white", "gray.700")}
-        boxShadow="lg"
-        borderRadius="full"
+        bg={cardBg}
         p={2}
       >
         <Flex direction="column" gap={2}>
-          {/* Toggle Dark/Light Mode Button */}
           <IconButton
             aria-label="Toggle Dark Mode"
             icon={colorMode === "light" ? <FaMoon /> : <FaSun />}
             onClick={toggleColorMode}
             isRound
-            size="xs"
-            colorScheme="teal"
+            size="sm"
+            bg="transparent"
           />
-
           <IconButton
             aria-label="Toggle Unit"
-            icon={<FaCogs />}
+            icon={<Text fontSize="sm">{unit}</Text>}
             onClick={toggleUnit}
             isRound
-            size="xs"
-            colorScheme="teal"
+            size="sm"
+            bg="transparent"
           />
         </Flex>
       </Box>
