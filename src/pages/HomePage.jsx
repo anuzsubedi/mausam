@@ -105,20 +105,24 @@ const HomePage = () => {
               spacing={4}
               overflowX="auto"
               py={2}
-              scrollbarWidth="thin" // Chakra UI prop for scrollbar width
+              scrollbarWidth="thin" // Thin scrollbar for Firefox
               css={{
+                scrollbarColor: `${useColorModeValue(
+                  "#A0AEC0",
+                  "#4A5568"
+                )} ${useColorModeValue("#FFFFFF", "#2D3748")}`, // Thumb and track colors for Firefox
                 "::-webkit-scrollbar": {
-                  height: "6px", // Adjust scrollbar height
+                  height: "6px", // Thin scrollbar height for WebKit browsers
                 },
                 "::-webkit-scrollbar-track": {
-                  backgroundColor: cardBg, // Match the card background
+                  backgroundColor: useColorModeValue("#EDF2F7", "#2D3748"), // Track color dynamically based on mode
                 },
                 "::-webkit-scrollbar-thumb": {
                   backgroundColor: useColorModeValue("#A0AEC0", "#4A5568"), // Thumb color
                   borderRadius: "8px", // Rounded scrollbar
                 },
                 "::-webkit-scrollbar-thumb:hover": {
-                  backgroundColor: useColorModeValue("#718096", "#2D3748"), // Hover effect
+                  backgroundColor: useColorModeValue("#718096", "#2D3748"), // Hover effect for thumb
                 },
               }}
             >
