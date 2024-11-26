@@ -90,44 +90,52 @@ const HomePage = () => {
 
       {/* Hourly Forecast Card */}
       {!loading && hourlyData.length > 0 && (
-        <Box bg={cardBg} p={4} borderRadius="lg" boxShadow="lg" mt={8}>
-          <Text fontSize="lg" fontWeight="bold" mb={4}>
-            Hourly Forecast
-          </Text>
-          <HStack
-            spacing={4}
-            overflowX="auto"
-            py={2}
-            css={{
-              "::-webkit-scrollbar": {
-                display: "none",
-              },
-            }}
+        <Flex justifyContent="center" mt={8}>
+          <Box
+            bg={cardBg}
+            p={4}
+            borderRadius="lg"
+            boxShadow="lg"
+            w={["80%", "80%", "50%"]} // Responsive widths: 80% for small screens, 50% for large screens
           >
-            {hourlyData.map((hour, index) => (
-              <VStack
-                key={index}
-                bg={useColorModeValue("gray.200", "gray.600")}
-                p={4}
-                borderRadius="md"
-                boxShadow="md"
-                minW="100px"
-                textAlign="center"
-              >
-                <Text fontSize="sm">{hour.time.split(" ")[1]}</Text>
-                <Box
-                  as="img"
-                  src={`https:${hour.condition.icon}`}
-                  alt={hour.condition.text}
-                  boxSize="40px"
-                />
-                <Text fontSize="md" fontWeight="bold">
-                  {unit === "C" ? `${hour.temp_c}°C` : `${hour.temp_f}°F`}
-                </Text>
-              </VStack>
-            ))}
-          </HStack>
-        </Box>
+            <Text fontSize="lg" fontWeight="bold" mb={4}>
+              Hourly Forecast
+            </Text>
+            <HStack
+              spacing={4}
+              overflowX="auto"
+              py={2}
+              css={{
+                "::-webkit-scrollbar": {
+                  display: "none",
+                },
+              }}
+            >
+              {hourlyData.map((hour, index) => (
+                <VStack
+                  key={index}
+                  bg={useColorModeValue("gray.200", "gray.600")}
+                  p={4}
+                  borderRadius="md"
+                  boxShadow="md"
+                  minW="100px"
+                  textAlign="center"
+                >
+                  <Text fontSize="sm">{hour.time.split(" ")[1]}</Text>
+                  <Box
+                    as="img"
+                    src={`https:${hour.condition.icon}`}
+                    alt={hour.condition.text}
+                    boxSize="40px"
+                  />
+                  <Text fontSize="md" fontWeight="bold">
+                    {unit === "C" ? `${hour.temp_c}°C` : `${hour.temp_f}°F`}
+                  </Text>
+                </VStack>
+              ))}
+            </HStack>
+          </Box>
+        </Flex>
       )}
 
       {/* Floating Sidebar */}
