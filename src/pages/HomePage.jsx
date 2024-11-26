@@ -105,9 +105,20 @@ const HomePage = () => {
               spacing={4}
               overflowX="auto"
               py={2}
+              scrollbarWidth="thin" // Chakra UI prop for scrollbar width
               css={{
                 "::-webkit-scrollbar": {
-                  display: "none",
+                  height: "6px", // Adjust scrollbar height
+                },
+                "::-webkit-scrollbar-track": {
+                  backgroundColor: cardBg, // Match the card background
+                },
+                "::-webkit-scrollbar-thumb": {
+                  backgroundColor: useColorModeValue("#A0AEC0", "#4A5568"), // Thumb color
+                  borderRadius: "8px", // Rounded scrollbar
+                },
+                "::-webkit-scrollbar-thumb:hover": {
+                  backgroundColor: useColorModeValue("#718096", "#2D3748"), // Hover effect
                 },
               }}
             >
