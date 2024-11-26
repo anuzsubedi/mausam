@@ -16,13 +16,8 @@ import {
   AlertIcon,
   AlertDescription,
 } from "@chakra-ui/react";
-import {
-  FaMoon,
-  FaSun,
-  FaSearchLocation,
-  FaSearch,
-  FaMapPin,
-} from "react-icons/fa";
+import { FaMoon, FaSun, FaSearch } from "react-icons/fa";
+import { FaLocationCrosshairs } from "react-icons/fa6";
 import {
   WiDaySunny,
   WiCloud,
@@ -30,9 +25,8 @@ import {
   WiSnow,
   WiThunderstorm,
   WiFog,
-} from "react-icons/wi"; // Import weather icons
+} from "react-icons/wi";
 import { fetchHourlyForecast } from "../services/weatherService";
-import { FaLocationCrosshairs, FaLocationPin } from "react-icons/fa6";
 
 const HomePage = () => {
   const { colorMode, toggleColorMode } = useColorMode();
@@ -46,9 +40,9 @@ const HomePage = () => {
   const [error, setError] = useState(null);
   const [unit, setUnit] = useState("C");
   const [searchQuery, setSearchQuery] = useState("");
+  const [locationError, setLocationError] = useState(false);
 
   const getWeatherIcon = (condition, size) => {
-    // Map weather conditions to icons with customizable size
     if (condition.includes("Sunny")) return <WiDaySunny size={size} />;
     if (condition.includes("Cloud")) return <WiCloud size={size} />;
     if (condition.includes("Rain")) return <WiRain size={size} />;
@@ -88,11 +82,11 @@ const HomePage = () => {
           getWeather(`${latitude},${longitude}`);
         },
         () => {
-          setError("Failed to get location.");
+          setLocationError(true);
         }
       );
     } else {
-      setError("Geolocation is not supported by this browser.");
+      setLocationError(true);
     }
   };
 
@@ -100,53 +94,73 @@ const HomePage = () => {
     setUnit((prevUnit) => (prevUnit === "C" ? "F" : "C"));
   };
 
+  useEffect(() => {
+    getLocation(); // Fetch location on app load
+  }, []);
+
   return (
     <Box minH="100vh" bg={bg} color={textColor} p={4} fontFamily="monospace">
-      <Flex justifyContent="center" alignItems="center" mb={4}>
-        <InputGroup width={["80%", "80%", "50%"]}>
-          <Input
-            placeholder="Search for a city..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            bg={cardBg}
-            borderRadius="lg"
-          />
-          <InputRightElement>
-            <IconButton
-              aria-label="Search"
-              icon={<FaSearch />}
-              onClick={handleSearch}
-              isRound
-              size="sm"
-              bg="transparent"
+      <Flex
+        minH="100vh"
+        direction="column"
+        justifyContent="center"
+        alignItems="center"
+        gap={6}
+      >
+        {/* Search Bar */}
+        <Flex
+          justifyContent="center"
+          alignItems="center"
+          width={["80%", "80%", "50%"]}
+        >
+          <InputGroup>
+            <Input
+              placeholder="Search for a city..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              bg={cardBg}
+              borderRadius="lg"
             />
-          </InputRightElement>
-        </InputGroup>
-        <IconButton
-          ml={2}
-          aria-label="Use GPS"
-          icon={<FaLocationCrosshairs />}
-          onClick={getLocation}
-          isRound
-          size="sm"
-          bg="transparent"
-        />
-      </Flex>
-      {/* Error Notification */}
-      {error && (
-        <Flex justifyContent="center" mb={4}>
-          <Alert status="error" w={["80%", "80%", "50%"]} borderRadius="lg">
-            <AlertIcon />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
+            <InputRightElement>
+              <IconButton
+                aria-label="Search"
+                icon={<FaSearch />}
+                onClick={handleSearch}
+                isRound
+                size="sm"
+                bg="transparent"
+              />
+            </InputRightElement>
+          </InputGroup>
+          <IconButton
+            ml={2}
+            aria-label="Use GPS"
+            icon={<FaLocationCrosshairs />}
+            onClick={getLocation}
+            isRound
+            size="sm"
+            bg="transparent"
+          />
         </Flex>
-      )}
-      {/* Main Weather Section */}
-      <Flex justifyContent="center" alignItems="center" mb={8}>
+
+        {/* Error Notification */}
+        {(error || locationError) && (
+          <Flex justifyContent="center" width={["80%", "80%", "50%"]}>
+            <Alert status="error" borderRadius="lg">
+              <AlertIcon />
+              <AlertDescription>
+                {error ||
+                  "Failed to access location. Please allow permission or search for a city."}
+              </AlertDescription>
+            </Alert>
+          </Flex>
+        )}
+
+        {/* Main Weather Section */}
         {loading ? (
           <Spinner size="xl" />
         ) : weatherData ? (
-          <Box bg={bg} p={4} w={["80%", "80%", "50%"]}>
+          <Box bg={bg} p={4} width={["80%", "80%", "50%"]}>
             <Flex alignItems="center" justifyContent="space-between">
               <Box textAlign="left">
                 <Text fontSize="4xl" mb={2}>
@@ -167,16 +181,15 @@ const HomePage = () => {
             </Flex>
           </Box>
         ) : null}
-      </Flex>
-      {/* Hourly Forecast Card */}
-      {!loading && hourlyData.length > 0 && (
-        <Flex justifyContent="center">
+
+        {/* Hourly Forecast Card */}
+        {!loading && hourlyData.length > 0 && (
           <Box
             bg={cardBg}
             p={4}
             borderRadius="lg"
             boxShadow="lg"
-            w={["80%", "80%", "50%"]}
+            width={["80%", "80%", "50%"]}
           >
             <Text fontSize="lg" fontWeight="bold" mb={4}>
               Hourly Forecast
@@ -201,36 +214,37 @@ const HomePage = () => {
               ))}
             </HStack>
           </Box>
-        </Flex>
-      )}
-      {/* Floating Sidebar */}
-      <Box
-        position="fixed"
-        top="50%"
-        left="5"
-        transform="translateY(-50%)"
-        bg={cardBg}
-        p={2}
-      >
-        <Flex direction="column" gap={2}>
-          <IconButton
-            aria-label="Toggle Dark Mode"
-            icon={colorMode === "light" ? <FaMoon /> : <FaSun />}
-            onClick={toggleColorMode}
-            isRound
-            size="sm"
-            bg="transparent"
-          />
-          <IconButton
-            aria-label="Toggle Unit"
-            icon={<Text fontSize="sm">{unit}</Text>}
-            onClick={toggleUnit}
-            isRound
-            size="sm"
-            bg="transparent"
-          />
-        </Flex>
-      </Box>
+        )}
+
+        {/* Floating Sidebar */}
+        <Box
+          position="fixed"
+          top="50%"
+          left="5"
+          transform="translateY(-50%)"
+          bg={cardBg}
+          p={2}
+        >
+          <Flex direction="column" gap={2}>
+            <IconButton
+              aria-label="Toggle Dark Mode"
+              icon={colorMode === "light" ? <FaMoon /> : <FaSun />}
+              onClick={toggleColorMode}
+              isRound
+              size="sm"
+              bg="transparent"
+            />
+            <IconButton
+              aria-label="Toggle Unit"
+              icon={<Text fontSize="sm">°{unit}</Text>}
+              onClick={toggleUnit}
+              isRound
+              size="sm"
+              bg="transparent"
+            />
+          </Flex>
+        </Box>
+      </Flex>
     </Box>
   );
 };
