@@ -11,6 +11,14 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import { FaMoon, FaSun, FaCogs } from "react-icons/fa";
+import {
+  WiDaySunny,
+  WiCloud,
+  WiRain,
+  WiSnow,
+  WiThunderstorm,
+  WiFog,
+} from "react-icons/wi"; // Import weather icons
 import { fetchHourlyForecast } from "../services/weatherService";
 
 const HomePage = () => {
@@ -23,7 +31,20 @@ const HomePage = () => {
   const [hourlyData, setHourlyData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [unit, setUnit] = useState("C"); // State to manage the unit
+  const [unit, setUnit] = useState("C");
+
+  const getWeatherIcon = (condition) => {
+    // Map weather conditions to icons with colors
+    if (condition.includes("Sunny"))
+      return <WiDaySunny size="48" color="yellow" />;
+    if (condition.includes("Cloud")) return <WiCloud size="48" color="gray" />;
+    if (condition.includes("Rain")) return <WiRain size="48" color="blue" />;
+    if (condition.includes("Snow")) return <WiSnow size="48" color="white" />;
+    if (condition.includes("Thunder"))
+      return <WiThunderstorm size="48" color="purple" />;
+    if (condition.includes("Fog")) return <WiFog size="48" color="gray" />;
+    return <WiCloud size="48" color="gray" />; // Default icon
+  };
 
   const getWeather = async (latitude, longitude) => {
     try {
@@ -66,7 +87,7 @@ const HomePage = () => {
   return (
     <Box minH="100vh" bg={bg} color={textColor} p={4}>
       {/* Main Weather Section */}
-      <Flex justifyContent="center" alignItems="center" minH="40vh">
+      <Flex justifyContent="center" alignItems="center" minH="40vh" mb={8}>
         {loading ? (
           <Spinner size="xl" />
         ) : error ? (
@@ -75,11 +96,14 @@ const HomePage = () => {
           </Text>
         ) : (
           <Box textAlign="center">
+            <Box display="flex" justifyContent="center" mb={4}>
+              {getWeatherIcon(weatherData.current.condition.text)}
+            </Box>
             <Text fontSize="4xl" fontFamily="monospace">
               {weatherData.location.name}
             </Text>
             <Text fontSize="lg">{weatherData.current.condition.text}</Text>
-            <Text fontSize="2xl">
+            <Text fontSize="2xl" mt={2}>
               {unit === "C"
                 ? `${weatherData.current.temp_c}°C`
                 : `${weatherData.current.temp_f}°F`}
@@ -90,7 +114,7 @@ const HomePage = () => {
 
       {/* Hourly Forecast Card */}
       {!loading && hourlyData.length > 0 && (
-        <Flex justifyContent="center" mt={8}>
+        <Flex justifyContent="center">
           <Box
             bg={cardBg}
             p={4}
@@ -105,24 +129,24 @@ const HomePage = () => {
               spacing={4}
               overflowX="auto"
               py={2}
-              scrollbarWidth="thin" // Thin scrollbar for Firefox
+              scrollbarWidth="thin"
               css={{
                 scrollbarColor: `${useColorModeValue(
                   "#A0AEC0",
                   "#4A5568"
-                )} ${useColorModeValue("#FFFFFF", "#2D3748")}`, // Thumb and track colors for Firefox
+                )} ${useColorModeValue("#EDF2F7", "#2D3748")}`,
                 "::-webkit-scrollbar": {
-                  height: "6px", // Thin scrollbar height for WebKit browsers
+                  height: "6px",
                 },
                 "::-webkit-scrollbar-track": {
-                  backgroundColor: useColorModeValue("#EDF2F7", "#2D3748"), // Track color dynamically based on mode
+                  backgroundColor: useColorModeValue("#EDF2F7", "#2D3748"),
                 },
                 "::-webkit-scrollbar-thumb": {
-                  backgroundColor: useColorModeValue("#A0AEC0", "#4A5568"), // Thumb color
-                  borderRadius: "8px", // Rounded scrollbar
+                  backgroundColor: useColorModeValue("#A0AEC0", "#4A5568"),
+                  borderRadius: "8px",
                 },
                 "::-webkit-scrollbar-thumb:hover": {
-                  backgroundColor: useColorModeValue("#718096", "#2D3748"), // Hover effect for thumb
+                  backgroundColor: useColorModeValue("#718096", "#2D3748"),
                 },
               }}
             >
@@ -137,12 +161,7 @@ const HomePage = () => {
                   textAlign="center"
                 >
                   <Text fontSize="sm">{hour.time.split(" ")[1]}</Text>
-                  <Box
-                    as="img"
-                    src={`https:${hour.condition.icon}`}
-                    alt={hour.condition.text}
-                    boxSize="40px"
-                  />
+                  {getWeatherIcon(hour.condition.text)}
                   <Text fontSize="md" fontWeight="bold">
                     {unit === "C" ? `${hour.temp_c}°C` : `${hour.temp_f}°F`}
                   </Text>
