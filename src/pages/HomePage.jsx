@@ -36,12 +36,12 @@ const HomePage = () => {
   const getWeatherIcon = (condition) => {
     // Map weather conditions to icons with colors
     if (condition.includes("Sunny"))
-      return <WiDaySunny size="48" color="yellow" />;
+      return <WiDaySunny size="128" color="yellow" />;
     if (condition.includes("Cloud")) return <WiCloud size="48" color="gray" />;
     if (condition.includes("Rain")) return <WiRain size="48" color="blue" />;
     if (condition.includes("Snow")) return <WiSnow size="48" color="white" />;
     if (condition.includes("Thunder"))
-      return <WiThunderstorm size="48" color="purple" />;
+      return <WiThunderstorm size="128" color="purple" />;
     if (condition.includes("Fog")) return <WiFog size="48" color="gray" />;
     return <WiCloud size="48" color="gray" />; // Default icon
   };
@@ -85,9 +85,15 @@ const HomePage = () => {
   };
 
   return (
-    <Box minH="100vh" bg={bg} color={textColor} p={4}>
+    <Box
+      minH="100vh"
+      bg={bg}
+      color={textColor}
+      p={4}
+      fontFamily="monospace" // Apply monospace font globally
+    >
       {/* Main Weather Section */}
-      <Flex justifyContent="center" alignItems="center" minH="40vh" mb={8}>
+      <Flex justifyContent="center" alignItems="center" mb={8}>
         {loading ? (
           <Spinner size="xl" />
         ) : error ? (
@@ -95,19 +101,28 @@ const HomePage = () => {
             {error}
           </Text>
         ) : (
-          <Box textAlign="center">
-            <Box display="flex" justifyContent="center" mb={4}>
-              {getWeatherIcon(weatherData.current.condition.text)}
-            </Box>
-            <Text fontSize="4xl" fontFamily="monospace">
-              {weatherData.location.name}
-            </Text>
-            <Text fontSize="lg">{weatherData.current.condition.text}</Text>
-            <Text fontSize="2xl" mt={2}>
-              {unit === "C"
-                ? `${weatherData.current.temp_c}°C`
-                : `${weatherData.current.temp_f}°F`}
-            </Text>
+          <Box bg={bg} p={4} w={["80%", "80%", "50%"]}>
+            <Flex alignItems="center" justifyContent="space-between">
+              {/* Column 1: City, Weather Info, Temperature */}
+              <Box textAlign="left">
+                <Text fontSize="4xl" mb={2}>
+                  {weatherData.location.name}
+                </Text>
+                <Text fontSize="lg" mb={4}>
+                  {weatherData.current.condition.text}
+                </Text>
+                <Text fontSize="5xl">
+                  {unit === "C"
+                    ? `${weatherData.current.temp_c}°C`
+                    : `${weatherData.current.temp_f}°F`}
+                </Text>
+              </Box>
+
+              {/* Column 2: Weather Icon */}
+              <Box display="flex" justifyContent="center" alignItems="center">
+                {getWeatherIcon(weatherData.current.condition.text)}
+              </Box>
+            </Flex>
           </Box>
         )}
       </Flex>
@@ -120,7 +135,7 @@ const HomePage = () => {
             p={4}
             borderRadius="lg"
             boxShadow="lg"
-            w={["80%", "80%", "50%"]} // Responsive widths: 80% for small screens, 50% for large screens
+            w={["80%", "80%", "50%"]} // Keep the forecast card size unchanged
           >
             <Text fontSize="lg" fontWeight="bold" mb={4}>
               Hourly Forecast
