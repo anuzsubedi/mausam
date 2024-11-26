@@ -160,7 +160,7 @@ const HomePage = () => {
               <AlertIcon />
               <AlertDescription>
                 {error ||
-                  "Failed to access location. Please allow permission or search for a city.."}
+                  "Failed to access location. Please allow permission or search for a city."}
               </AlertDescription>
             </Alert>
           </Flex>
