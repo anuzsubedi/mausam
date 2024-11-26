@@ -52,13 +52,21 @@ const HomePage = () => {
     return <WiCloud size={size} />;
   };
 
+  const formatTime = (time) => {
+    const [hour, minute] = time.split(":");
+    const hourInt = parseInt(hour, 10);
+    const ampm = hourInt >= 12 ? "PM" : "AM";
+    const formattedHour = hourInt % 12 || 12;
+    return `${formattedHour}:${minute} ${ampm}`;
+  };
+
   const getWeather = async (query) => {
     try {
       setLoading(true);
       setError(null);
       const data = await fetchHourlyForecast(query);
       setWeatherData(data);
-      setHourlyData(data.forecast.forecastday[0].hour); // Set hourly forecast
+      setHourlyData(data.forecast.forecastday[0].hour);
       setLoading(false);
     } catch (err) {
       setError(err.message || "Failed to fetch weather data.");
@@ -69,6 +77,7 @@ const HomePage = () => {
   const handleSearch = () => {
     if (searchQuery.trim() !== "") {
       getWeather(searchQuery);
+      setLocationError(false);
     } else {
       setError("Please enter a valid city name.");
     }
@@ -80,6 +89,7 @@ const HomePage = () => {
         (position) => {
           const { latitude, longitude } = position.coords;
           getWeather(`${latitude},${longitude}`);
+          setLocationError(false);
         },
         () => {
           setLocationError(true);
@@ -205,7 +215,9 @@ const HomePage = () => {
                   minW="100px"
                   textAlign="center"
                 >
-                  <Text fontSize="sm">{hour.time.split(" ")[1]}</Text>
+                  <Text fontSize="sm">
+                    {formatTime(hour.time.split(" ")[1])}
+                  </Text>
                   {getWeatherIcon(hour.condition.text, 48)}
                   <Text fontSize="md" fontWeight="bold">
                     {unit === "C" ? `${hour.temp_c}°C` : `${hour.temp_f}°F`}
